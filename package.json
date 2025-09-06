@@ -29,6 +29,7 @@
     "prettier-plugin-organize-imports": "^3.2.4"
   },
   "dependencies": {
+    "dotenv": "^17.2.2",
     "node-telegram-bot-api": "^0.66.0",
     "pdfjs-dist": "^4.3.136",
     "pngjs": "^7.0.0",
