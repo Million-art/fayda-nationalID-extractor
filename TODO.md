@@ -1,0 +1,8 @@
+- [x] Install telegraf
+- [x] Install puppeteer for rendering
+- [x] Update extractImagesFromPdf to render full pages as PNG
+- [x] Update src/index.js to include bot logic
+- [x] Handle PDF file uploads from Telegram
+- [x] Extract images using the existing function
+- [x] Send extracted PNGs back to the user
+- [ ] Test the bot
