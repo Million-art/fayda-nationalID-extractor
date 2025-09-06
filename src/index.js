@@ -1,14 +1,16 @@
 import {getDocument, OPS} from 'pdfjs-dist'
 import {PNG} from 'pngjs'
 import { Telegraf } from 'telegraf'
+import dotenv from 'dotenv'
+dotenv.config()
 
 function resizePng(png, targetWidth, targetHeight) {
   const resized = new PNG({width: targetWidth, height: targetHeight})
   for (let y = 0; y < targetHeight; y++) {
     for (let x = 0; x < targetWidth; x++) {
       // Nearest neighbor scaling
-      const srcX = Math.floor(x * png.width / targetWidth)
-      const srcY = Math.floor(y * png.height / targetHeight)
+      const srcX = Math.floor((x * png.width) / targetWidth)
+      const srcY = Math.floor((y * png.height) / targetHeight)
       const srcIdx = (srcY * png.width + srcX) << 2
       const dstIdx = (y * targetWidth + x) << 2
       resized.data[dstIdx] = png.data[srcIdx]
@@ -60,24 +62,7 @@ function combinePngsSideBySide(png1, png2, gap = 50, margin = 30) {
   return combined
 }
 
-function convertPngToGrayscale(png) {
-  const gray = new PNG({width: png.width, height: png.height})
-  for (let y = 0; y < png.height; y++) {
-    for (let x = 0; x < png.width; x++) {
-      const idx = (y * png.width + x) << 2
-      const r = png.data[idx]
-      const g = png.data[idx + 1]
-      const b = png.data[idx + 2]
-      // Luminosity method for grayscale
-      const grayVal = Math.round(0.21 * r + 0.72 * g + 0.07 * b)
-      gray.data[idx] = grayVal
-      gray.data[idx + 1] = grayVal
-      gray.data[idx + 2] = grayVal
-      gray.data[idx + 3] = png.data[idx + 3] // preserve alpha
-    }
-  }
-  return gray
-}
+ 
 
 export async function extractImagesFromPdf(pdfPath) {
   const loadingTask = getDocument(pdfPath)
@@ -111,7 +96,7 @@ export async function extractImagesFromPdf(pdfPath) {
   return images
 }
 
-const bot = new Telegraf('8095395121:AAGaMatgwTE_asHZWcMb1YLKY0n93ZWWsEY')
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN)
 
 bot.start((ctx) => ctx.reply('Welcome! Send me a PDF file, and I will extract images for you.'))
 
@@ -129,12 +114,7 @@ bot.on('document', async (ctx) => {
       const lastTwoImages = images.slice(-2)
       const combinedPng = combinePngsSideBySide(lastTwoImages[0], lastTwoImages[1], 50, 30)
       const combinedBuffer = PNG.sync.write(combinedPng)
-      await ctx.replyWithPhoto({ source: combinedBuffer })
-
-      // Convert to grayscale and send
-      const grayPng = convertPngToGrayscale(combinedPng)
-      const grayBuffer = PNG.sync.write(grayPng)
-      await ctx.replyWithPhoto({ source: grayBuffer })
+      await ctx.replyWithPhoto({source: combinedBuffer})
     }
   } catch (error) {
     await ctx.reply('Failed to extract images from the PDF.')
@@ -153,5 +133,3 @@ function rgbToRgba(imgData) {
   }
   return rgbaData
 }
-
- 

@@ -83,3 +83,4 @@ node_modules
 .vscode
 lib
 *.png
+.env
